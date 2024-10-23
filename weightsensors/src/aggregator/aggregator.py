@@ -152,7 +152,7 @@ def setPumpBurst(sensor):
     return ""
 
 @app.route("/pumps/<string:sensor>/timed/<string:time>", methods=['POST'])
-def setPumpBurst(sensor, time):
+def setPumpTimed(sensor, time):
     sensor = escape(sensor)
     time = escape(time)
     client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------")
