@@ -14,6 +14,8 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
+const int numer_of_loadcells = 6;
+
 const int HX711_dout = 4; // microcontroller unit > HX711 dout pin, must be external interrupt capable!
 const int HX711_sck = 16; // microcontroller unit > HX711 sck pin
 
@@ -27,18 +29,17 @@ const int LC2_sck = 17;
 const int LC3_dout = 19;
 const int LC3_sck = 18;
 
-const int LC4_dout = 3;
-const int LC4_sck = 21;
+const int LC4_dout = 32;
+const int LC4_sck = 33;
+
+const int LC5_dout = 12;
+const int LC5_sck = 14;
 
 // HX711 constructor:
-HX711_ADC LoadCell[5] = {HX711_ADC(HX711_dout, HX711_sck), HX711_ADC(LC1_dout, LC1_sck), HX711_ADC(LC2_dout, LC2_sck), HX711_ADC(LC3_dout, LC3_sck), HX711_ADC(LC4_dout, LC4_sck)};
-// HX711_ADC LoadCell(HX711_dout, HX711_sck);
-// HX711_ADC LoadCell1(LC1_dout, LC1_sck);
-// HX711_ADC LoadCell2(LC2_dout, LC2_sck);
-// HX711_ADC LoadCell3(LC3_dout, LC3_sck);
-// HX711_ADC LoadCell4(LC4_dout, LC4_sck);
+HX711_ADC LoadCell[numer_of_loadcells] = {HX711_ADC(HX711_dout, HX711_sck), HX711_ADC(LC1_dout, LC1_sck), HX711_ADC(LC2_dout, LC2_sck), HX711_ADC(LC3_dout, LC3_sck), HX711_ADC(LC4_dout, LC4_sck), HX711_ADC(LC5_dout, LC5_sck)};
+
 float calibrationValue = 451.22;
-float calibrationValueLC1 = 743.72; // faulty
+float calibrationValueLC1 = 743.72;
 float calibrationValueLC2 = 392.59;
 float calibrationValueLC3 = -118.45;
 float calibrationValueLC4 = 410.49;
@@ -59,13 +60,13 @@ const char *password = "process_hubby";
 
 IPAddress server(131, 159, 6, 111);
 const int port = 1883;
-const std::string sensorID[] = {"1111", "1112", "1113", "1114", "1115"};
+const std::string sensorID[] = {"1111", "1112", "1113", "1114", "1115", "1116"};
 
 // Weight displayed on the display
-int displayedWeight[5] = {0, 0, 0, 0, 0};
+int displayedWeight[numer_of_loadcells] = {0, 0, 0, 0, 0, 0};
 // Weight Measured in the previous iteration
-int lastWeight[] = {0, 0, 0, 0, 0};
-bool firstMeasurement = true;
+int lastWeight[numer_of_loadcells] = {0, 0, 0, 0, 0, 0};
+bool firstMeasurement[numer_of_loadcells] = {true, true, true, true, true, true};
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -93,7 +94,7 @@ void displayReconnectMessage()
 // interrupt routine:
 void dataReadyISR()
 {
-  if (LoadCell[0].update() || LoadCell[1].update() || LoadCell[2].update() || LoadCell[3].update() || LoadCell[4].update())
+  if (LoadCell[0].update() || LoadCell[1].update() || LoadCell[2].update() || LoadCell[3].update() || LoadCell[4].update()|| LoadCell[5].update())
   {
     newDataReady = 1;
   }
@@ -111,27 +112,32 @@ void setupLoadcell()
 
   unsigned long stabilizingtime = 2000;
   boolean _tare = true;
-  for (size_t i = 0; i < 5; i++)
+  for (size_t i = 0; i < numer_of_loadcells; i++)
   {
     LoadCell[i].begin();
     LoadCell[i].start(stabilizingtime, _tare);
     if (LoadCell[i].getTareTimeoutFlag())
     {
-      Serial.println("Timeout, check wiring to HX711 and pin designations");
+      Serial.print("Timeout, check wiring to HX711 and pin designations for LoadCell ");
+      Serial.println(i);
       while (true)
         ;
     }
     else
     {
       LoadCell[i].setCalFactor(calibrationValue);
-      Serial.println("Startup 0 is complete");
+      Serial.print("Startup for LoadCell ");
+      Serial.print(i);
+      Serial.println(" is complete");
     }
   }
+
   attachInterrupt(digitalPinToInterrupt(HX711_dout), dataReadyISR, FALLING);
   attachInterrupt(digitalPinToInterrupt(LC1_dout), dataReadyISR, FALLING);
   attachInterrupt(digitalPinToInterrupt(LC2_dout), dataReadyISR, FALLING);
   attachInterrupt(digitalPinToInterrupt(LC3_dout), dataReadyISR, FALLING);
   attachInterrupt(digitalPinToInterrupt(LC4_dout), dataReadyISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(LC5_dout), dataReadyISR, FALLING);
 }
 
 void setupDisplay()
@@ -260,14 +266,14 @@ void handleNewWeightData(size_t i)
   bool smallDelta = abs(newWeight - displayedWeight[i]) <= 5;
   // The delta in weight is pretty large and thus the weight measurement has not yet stabilized, do not update the display
   bool largeDelta = abs(newWeight - lastWeight[i]) >= 6;
-  if (!firstMeasurement)
+  if (!firstMeasurement[i])
   {
     if (largeDelta && newWeight > 5)
     {
       displayMeasuring();
     }
     lastWeight[i] = newWeight;
-    if (smallDelta || largeDelta)
+    if (smallDelta || largeDelta || newWeight <= 5)
     {
       // Do not update the screen
       return;
@@ -275,7 +281,7 @@ void handleNewWeightData(size_t i)
   }
   else
   {
-    firstMeasurement = false;
+    firstMeasurement[i] = false;
     lastWeight[i] = newWeight;
   }
   if (newWeight <= 5)
@@ -284,6 +290,7 @@ void handleNewWeightData(size_t i)
     newWeight = 0;
   }
   displayedWeight[i] = newWeight;
+
   if (serviceEnabled)
   {
     publishWeightToMQTT(i);
@@ -308,10 +315,6 @@ void reconnect()
     if (client.connect("ESP32Client"))
     {
       Serial.println("connected");
-      // Subscribe
-      client.subscribe("esp32/output");
-      // display weight after reconnection
-      displayWeight(0);
     }
     else
     {
@@ -339,7 +342,7 @@ void loop()
   {
     if (millis() > t + serialPrintInterval)
     {
-      for (size_t i = 0; i < 5; i++)
+      for (size_t i = 0; i < numer_of_loadcells; i++)
       {
         handleNewWeightData(i);
       }
@@ -352,11 +355,10 @@ void loop()
     char inByte = Serial.read();
     if (inByte == 't')
     {
-      LoadCell[0].tareNoDelay();
-      LoadCell[1].tareNoDelay();
-      LoadCell[2].tareNoDelay();
-      LoadCell[3].tareNoDelay();
-      LoadCell[4].tareNoDelay();
+      for (size_t i = 0; i < numer_of_loadcells; i++)
+      {
+        LoadCell[i].tareNoDelay();
+      }
     }
   }
 

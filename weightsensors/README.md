@@ -1,19 +1,5 @@
 # Esp32-Weightsensor
 
-## to add
-
-- boot button needs to be pressed when the wrong boot mode is detected (put into download mode) "You have to push and hold the Boot button until you see "Connecting....." in the terminal window. Then release the button and it should load."
-Also disconnect power and ground
-- install the board driver
-- configure the interface/connection port, display with pio device list
-- uses https://github.com/olkal/HX711_ADC
-- if the code upload fails, try unplugging the power connections (A fatal error occurred: Serial data stream stopped: Possible serial noise or corruption.)
-- mqtt message might look weird in some clients, byte order
-- power von einem ZY12PDN board
-
-Pumpen
-- bei der power delivery für die relays ist die Orientierung des usb-c kabel aus irgendeinem grund wichtig. wenn es nicht klappt, umdrehen und nochmal versuchen
-
 ## Demo
 
 ![Demo GIF of measurement](docs/images/demo.gif)
