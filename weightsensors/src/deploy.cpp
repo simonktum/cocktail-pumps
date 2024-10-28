@@ -94,7 +94,7 @@ void displayReconnectMessage()
 // interrupt routine:
 void dataReadyISR()
 {
-  if (LoadCell[0].update() || LoadCell[1].update() || LoadCell[2].update() || LoadCell[3].update() || LoadCell[4].update()|| LoadCell[5].update())
+  if (LoadCell[0].update() || LoadCell[1].update() || LoadCell[2].update() || LoadCell[3].update() || LoadCell[4].update() || LoadCell[5].update())
   {
     newDataReady = 1;
   }
@@ -169,7 +169,28 @@ void setup_wifi()
 
 void callback(char *topic, byte *message, unsigned int length)
 {
-  // For now we do not care about any topics, so we do not implement it
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(" Message: ");
+  std::string messageTemp;
+
+  for (int i = 0; i < length; i++)
+  {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+  Serial.println();
+
+  if (messageTemp.rfind("TARE", 0) == 0) // check if it starts with TARE
+  {
+    Serial.println("TARE command found");
+    for (size_t i = 0; i < numer_of_loadcells; i++)
+    {
+      LoadCell[i].tareNoDelay();
+      Serial.print("Completed tare for: ");
+      Serial.println(i);
+    }
+  }
 }
 
 void setupMQTT()
@@ -315,6 +336,11 @@ void reconnect()
     if (client.connect("ESP32Client"))
     {
       Serial.println("connected");
+      std::__cxx11::string topic = "cocktail/weight/"; // topic for instructions
+      const char *cstr = topic.c_str();
+      boolean success = client.subscribe(topic.c_str());
+      Serial.print("Subscribed to MQTT: ");
+      Serial.println(success);
     }
     else
     {
