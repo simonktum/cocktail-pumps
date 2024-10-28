@@ -4,9 +4,13 @@
 import paho.mqtt.client as mqtt
 import jsonpickle
 from weight_dto import Weight_DTO
-from flask import Flask, make_response
+from flask import Flask, make_response, request
+import requests
+from threading import Thread
 from markupsafe import escape
 import struct
+import re
+import time
 
 app = Flask(__name__)
 ipAddressMQTT = "131.159.6.111"
@@ -143,6 +147,12 @@ def setEmptyContainerWeight(sensor):
     sensorData[sensor].empty = sensorData[sensor].weight
     return str(sensorData[sensor].empty)
 
+
+@app.route("/weights/tare", methods=['POST'])
+def setTare():
+    client.publish("cocktail/weight/", "TARE")
+    return ""
+
 # Send pump instructions
 
 @app.route("/pumps/<string:sensor>/burst", methods=['POST'])
@@ -157,3 +167,42 @@ def setPump(sensor, time):
     time = escape(time)
     client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------")
     return ""
+
+# asynchronous call
+@app.route("/pumps/fill/<string:sensor>/<string:amount>", methods=['POST'])
+def setFillGlass(sensor, amount): #TODO Mutex to only have one call at once
+    sensor = escape(sensor)
+    time = escape(amount)
+    callback = request.headers.get('CPEE-CALLBACK')
+    callback = re.sub('"', '', callback)
+    Thread(target = fillGlass, args=(sensor, amount, callback)).start()
+    client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------")
+    return ""
+
+@app.route("/pumps/testput", methods=['PUT'])
+def testput():
+    print("PUT")
+    return ""
+
+def fillGlass(sensor, amount, callback):
+    try:
+        # sensor = "1"
+        timeout = "1"
+        glass_weight = 0
+        max_iterations = 10
+        iterator = 0
+        while iterator < 2:
+            iterator += 1
+            # TODO Stop when amount it reached
+            if sensor in sensorData.keys():
+                glass_weight = sensorData[sensor].weight
+            print("cocktail/pumpen", "TIMED" + sensor + "AS" + timeout + "------")
+            client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + timeout + "------")
+            time.sleep(2)
+            if sensor in sensorData.keys():
+                glass_weight = sensorData[sensor].weight
+            print(glass_weight)
+        print(callback)
+        requests.put(callback)
+        glass_weight = 0 # sensorData[sensor].weight;
+    except Exception as e: print(repr(e))
