@@ -177,7 +177,9 @@ def setFillGlass(sensor, amount): #TODO Mutex to only have one call at once
     callback = re.sub('"', '', callback)
     Thread(target = fillGlass, args=(sensor, amount, callback)).start()
     client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------")
-    return ""
+    response = make_response('Ack.: Response later', 200)
+    response.headers['CPEE-CALLBACK'] = True
+    return response
 
 @app.route("/pumps/testput", methods=['PUT'])
 def testput():
