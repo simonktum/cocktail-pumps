@@ -213,8 +213,10 @@ def fillGlass(sensor, amount, callback):
             
             time.sleep(4)
 
-            print(f"Current weight: {sensorData["sensor_1111"].weight}")
-            print(f"Already pumped: {glass_start_weight- sensorData["sensor_1111"].weight}")
+            print("Current weight:")
+            print(sensorData['sensor_1111'].weight)
+            print("Already pumped:")
+            print(glass_start_weight- sensorData['sensor_1111'].weight)
             if sensorData["sensor_1111"].weight - glass_start_weight >= int(amount):
                 print("Finished pumping")
                 stop = True
