@@ -225,6 +225,7 @@ def fillGlass(sensor, amount, callback):
                 glass_weight = sensorData[sensor].weight
             print(glass_weight)
         print(callback)
+        time.sleep(10)
         requests.put(callback)
         glass_weight = 0 # sensorData[sensor].weight;
         isBusy = False
