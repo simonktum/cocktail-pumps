@@ -17,7 +17,6 @@ ipAddressMQTT = "131.159.6.111"
 portMQTT = 1883
 
 sensorData = {}
-isBusy = False
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -162,41 +161,27 @@ def setTare():
 
 @app.route("/pumps/<string:sensor>/burst", methods=['POST'])
 def setPumpBurst(sensor):
-    if isBusy:
-        response = make_response('The pumps are still busy', 409)
-        return response
-    isBusy = True
     sensor = escape(sensor)
     client.publish("cocktail/pumpen", "BURST" + sensor + "------")
-    isBusy = False
     return ""
 
 @app.route("/pumps/<string:sensor>/timed/<string:time>", methods=['POST'])
 def setPump(sensor, time):
-    if isBusy:
-        response = make_response('The pumps are still busy', 409)
-        return response
-    isBusy = True
     sensor = escape(sensor)
     time = escape(time)
     client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------")
-    isBusy = False
     return ""
 
 # asynchronous call
 @app.route("/pumps/fill/<string:sensor>/<string:amount>", methods=['POST'])
-def setFillGlass(sensor, amount): #TODO Mutex to only have one call at once
-    #if isBusy:
-    #    response = make_response('The pumps are still busy', 409)
-    #    return response
-    isBusy = True
+def setFillGlass(sensor, amount):
     sensor = escape(sensor)
     time = escape(amount)
     callback = request.headers.get('CPEE-CALLBACK')
     
     callback = re.sub('"', '', callback)
     Thread(target = fillGlass, args=(sensor, amount, callback)).start()
-    client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------")
+    client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------", qos=0)
     response = make_response('Ack.: Response later', 200)
     response.headers['CPEE-CALLBACK'] = 'true'
     return response
@@ -209,25 +194,33 @@ def testput():
 def fillGlass(sensor, amount, callback):
     try:
         # sensor = "1"
-        timeout = "1"
-        glass_weight = 0
+        duration = "2"
+        glass_start_weight = 0
+        stop = False
+        if "sensor_1111" in sensorData.keys():
+            glass_start_weight = sensorData["sensor_1111"].weight
+            print(f"Start weight: {glass_start_weight}")
+            print(f"End Weight: {amount}")
+        else:
+            print("No glass was found")
+            return -1
         max_iterations = 10
         iterator = 0
-        while iterator < 2:
+        while (iterator < max_iterations) and not stop:
             iterator += 1
-            # TODO Stop when amount it reached
-            if sensor in sensorData.keys():
-                glass_weight = sensorData[sensor].weight
-            print("cocktail/pumpen", "TIMED" + sensor + "AS" + timeout + "------")
-            client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + timeout + "------")
-            time.sleep(2)
-            if sensor in sensorData.keys():
-                glass_weight = sensorData[sensor].weight
-            print(glass_weight)
+            print("Starting pump")
+            client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + duration + "------")
+            
+            time.sleep(4)
+
+            print(f"Current weight: {sensorData["sensor_1111"].weight}")
+            print(f"Already pumped: {glass_start_weight- sensorData["sensor_1111"].weight}")
+            if sensorData["sensor_1111"].weight - glass_start_weight >= int(amount):
+                print("Finished pumping")
+                stop = True
         print(callback)
-        time.sleep(10)
         requests.put(callback)
-        glass_weight = 0 # sensorData[sensor].weight;
-        isBusy = False
+        glass_start_weight = 0 # sensorData[sensor].weight;
+        #isBusy = False
     except Exception as e: print(repr(e))
-    isBusy = False
+    #isBusy = False
