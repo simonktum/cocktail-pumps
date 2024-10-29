@@ -17,6 +17,7 @@ ipAddressMQTT = "131.159.6.111"
 portMQTT = 1883
 
 sensorData = {}
+isBusy = False
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -53,10 +54,14 @@ def home():
             "weights/<sensor-id>/full": "Weight of the completely filled container on the scale. Null if weight not set previously via a POST to this endpoint",
             "weights/<sensor-id>/empty": "Weight of the completely empty container on the scale. Null if weight not set previously via a POST to this endpoint",
             "weights/<sensor-id>/level": "Current fill level based on weight of the container on the scale, requires full and empty to be set!",
+            "weights/tare": "Sends a tare command to all sensors to the current zero level."
         },
         "POST" : {
             "weights/<sensor-id>/full": "Sets the full value to the currently published weight. Used to calibrate the weight of a completely filled container on the scale.",
             "weights/<sensor-id>/empty": "Sets the empty value to the currently published weight. Used to calibrate the weight of a completely empty container on the scale.",
+            "pumps/<sensor-id>/burst": "Starts the pump related to the given sensor for 1 sec.",
+            "pumps/<sensor-id>/timed/<time>": "Starts the pump related to the given sensor for a time given in seconds.",
+            "pumps/fill/<sensor-id>/<amount>": "Fills the glass with the liquid on the given weightsensor. The amount is in grams."
         }
         }
     return endpoints
@@ -157,28 +162,43 @@ def setTare():
 
 @app.route("/pumps/<string:sensor>/burst", methods=['POST'])
 def setPumpBurst(sensor):
+    if isBusy:
+        response = make_response('The pumps are still busy', 409)
+        return response
+    isBusy = True
     sensor = escape(sensor)
     client.publish("cocktail/pumpen", "BURST" + sensor + "------")
+    isBusy = False
     return ""
 
 @app.route("/pumps/<string:sensor>/timed/<string:time>", methods=['POST'])
 def setPump(sensor, time):
+    if isBusy:
+        response = make_response('The pumps are still busy', 409)
+        return response
+    isBusy = True
     sensor = escape(sensor)
     time = escape(time)
     client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------")
+    isBusy = False
     return ""
 
 # asynchronous call
 @app.route("/pumps/fill/<string:sensor>/<string:amount>", methods=['POST'])
 def setFillGlass(sensor, amount): #TODO Mutex to only have one call at once
+    #if isBusy:
+    #    response = make_response('The pumps are still busy', 409)
+    #    return response
+    isBusy = True
     sensor = escape(sensor)
     time = escape(amount)
     callback = request.headers.get('CPEE-CALLBACK')
+    
     callback = re.sub('"', '', callback)
     Thread(target = fillGlass, args=(sensor, amount, callback)).start()
     client.publish("cocktail/pumpen", "TIMED" + sensor + "AS" + time + "------")
     response = make_response('Ack.: Response later', 200)
-    response.headers['CPEE-CALLBACK'] = True
+    response.headers['CPEE-CALLBACK'] = 'true'
     return response
 
 @app.route("/pumps/testput", methods=['PUT'])
@@ -207,4 +227,6 @@ def fillGlass(sensor, amount, callback):
         print(callback)
         requests.put(callback)
         glass_weight = 0 # sensorData[sensor].weight;
+        isBusy = False
     except Exception as e: print(repr(e))
+    isBusy = False
