@@ -13,8 +13,8 @@ import re
 import time
 
 app = Flask(__name__)
-ipAddressMQTT = "131.159.6.111"
-portMQTT = 1883
+ipAddressMQTT = "ipAddressMQTT"
+portMQTT = portMQTT
 
 sensorData = {}
 
@@ -203,7 +203,7 @@ def fillGlass(sensor, amount, callback):
             print(f"End Weight: {amount}")
         else:
             print("No glass was found")
-            return -1
+            raise Exception('No glass was found')
         max_iterations = 10
         iterator = 0
         while (iterator < max_iterations) and not stop:
@@ -216,7 +216,7 @@ def fillGlass(sensor, amount, callback):
             print("Current weight:")
             print(sensorData['sensor_1111'].weight)
             print("Already pumped:")
-            print(glass_start_weight- sensorData['sensor_1111'].weight)
+            print(sensorData['sensor_1111'].weight - glass_start_weight)
             if sensorData["sensor_1111"].weight - glass_start_weight >= int(amount):
                 print("Finished pumping")
                 stop = True

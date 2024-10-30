@@ -1,0 +1,128 @@
+<testset xmlns="http://cpee.org/ns/properties/2.0">
+  <executionhandler>ruby</executionhandler>
+  <dataelements>
+    <fill_level_1>-29.0</fill_level_1>
+  </dataelements>
+  <endpoints>
+    <timeout>https://cpee.org/services/timeout.php</timeout>
+    <subprocess>https://cpee.org/flow/start/url/</subprocess>
+    <get_weights>https://lab.bpm.in.tum.de/pumps/weights</get_weights>
+    <start_pump_0>https://lab.bpm.in.tum.de/pumps/pumps/fill/0/20</start_pump_0>
+    <start_pump_1>https://lab.bpm.in.tum.de/pumps/pumps/fill/1/20</start_pump_1>
+    <start_pump_2>https://lab.bpm.in.tum.de/pumps/pumps/fill/2/20</start_pump_2>
+    <start_pump_3>https://lab.bpm.in.tum.de/pumps/pumps/fill/3/20</start_pump_3>
+    <start_pump_4>https://lab.bpm.in.tum.de/pumps/pumps/fill/4/20</start_pump_4>
+    <get_fill_level>https://lab.bpm.in.tum.de/pumps/weights/sensor_1113/level</get_fill_level>
+  </endpoints>
+  <attributes>
+    <guarded>none</guarded>
+    <modeltype>CPEE</modeltype>
+    <theme>extended</theme>
+    <guarded_id/>
+    <info>Cocktail_Pumps</info>
+    <creator>Christine Ashcreek</creator>
+    <author>Christine Ashcreek</author>
+    <model_uuid>eb070c1d-939b-497a-a054-087c8f79ffa5</model_uuid>
+    <model_version/>
+    <design_stage>development</design_stage>
+    <design_dir>Teaching.dir/Prak.dir/TUM-Prak-24-SS.dir</design_dir>
+  </attributes>
+  <description>
+    <description xmlns="http://cpee.org/ns/description/1.0">
+      <call id="a7" endpoint="get_fill_level">
+        <parameters>
+          <label>Get Fill Level</label>
+          <method>:get</method>
+          <arguments/>
+        </parameters>
+        <code>
+          <prepare/>
+          <finalize output="result">!data.fill_level_1 = result</finalize>
+          <update output="result"/>
+          <rescue output="result"/>
+        </code>
+        <annotations>
+          <_generic/>
+          <_timing>
+            <_timing_weight/>
+            <_timing_avg/>
+            <explanations/>
+          </_timing>
+          <_shifting>
+            <_shifting_type>Duration</_shifting_type>
+          </_shifting>
+          <_context_data_analysis>
+            <probes/>
+            <ips/>
+          </_context_data_analysis>
+          <report>
+            <url/>
+          </report>
+          <_notes>
+            <_notes_general/>
+          </_notes>
+        </annotations>
+        <documentation>
+          <input/>
+          <output/>
+          <implementation>
+            <description/>
+          </implementation>
+          <code>
+            <description/>
+          </code>
+        </documentation>
+      </call>
+      <choose mode="exclusive">
+        <alternative condition="data.fill_level_1 &gt; 0.1">
+          <_probability>
+            <_probability_min/>
+            <_probability_max/>
+            <_probability_avg/>
+          </_probability>
+          <call id="a1" endpoint="start_pump_1">
+            <parameters>
+              <label>Start Pump 1</label>
+              <method>:post</method>
+              <arguments/>
+            </parameters>
+            <annotations>
+              <_generic/>
+              <_timing>
+                <_timing_weight/>
+                <_timing_avg/>
+                <explanations/>
+              </_timing>
+              <_shifting>
+                <_shifting_type>Duration</_shifting_type>
+              </_shifting>
+              <_context_data_analysis>
+                <probes/>
+                <ips/>
+              </_context_data_analysis>
+              <report>
+                <url/>
+              </report>
+              <_notes>
+                <_notes_general/>
+              </_notes>
+            </annotations>
+            <documentation>
+              <input/>
+              <output/>
+              <implementation>
+                <description/>
+              </implementation>
+            </documentation>
+          </call>
+        </alternative>
+        <otherwise/>
+      </choose>
+    </description>
+  </description>
+  <transformation>
+    <description type="copy"/>
+    <dataelements type="none"/>
+    <endpoints type="none"/>
+  </transformation>
+</testset>
