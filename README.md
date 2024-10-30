@@ -197,7 +197,7 @@ The remaining hardware was not implemented by me. Please check the original [Rea
 
 - /pumps/\<string:pump\>/burst: Run the specified pump for 1 second.
 - /pumps/\<string:pump\>/timed/\<int:time\> Run the specified pump for a given amount of time in seconds.
-- /pumps/fill/\<string:pump\>/\<int:amount\> Note: The script will run the pump for a maximum of 10 times and otherwise abort.
+- /pumps/fill/\<string:pump\>/\<int:amount\> Asynchronously fills the glass from the specified pump up to the amount specified in grams. Note: The script first checks if a weight is detected on sensor 0, i.e. the glass and will run the pump for a maximum of 10 times and otherwise abort.
 
 ### 3D Printed parts
 
