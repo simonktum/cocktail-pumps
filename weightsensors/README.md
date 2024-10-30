@@ -1,3 +1,7 @@
+Below is a copy of the original readme by Dominik Voigt
+
+----
+
 # Esp32-Weightsensor
 
 ## Demo

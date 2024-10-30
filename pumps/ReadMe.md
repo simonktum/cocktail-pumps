@@ -1,3 +1,7 @@
+Below is a copy of the original readme by Quirin Sailer
+
+----
+
 # Relay Ansteuerung
 Das Hauptziel dieses Projekts ist die Erstellung eines Systems, das das unabhängige Ansteuern von bis zu acht Relays über das MQTT-Protokoll ermöglicht.
 

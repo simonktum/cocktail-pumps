@@ -2,7 +2,10 @@
 
 # Demo
 
-![Demo GIF of the pump in action](docs/images/demo.gif)
+<p align="center">
+<img src="docs/images/demo.gif" alt="Demo of the pump in action" width="600">
+</p>
+
 
 # Description
 
@@ -14,11 +17,11 @@ The stated goal of this project was to implement a coherent system of loadcells 
 
 # Setup
 
-This is a quick introduction of how to get the current setup up and running. If you want more information on how to create this project, have a look at the [implementation]().
+This is a quick introduction of how to get the current setup up and running. If you want more information on how to create this project, have a look at the [implementation](https://github.com/simonktum/cocktail-pumps/?tab=readme-ov-file#implementation).
 
 0. Don't place anything on the weightcells yet
 1. Connect the relays to power via a usb-c cable.
-2. When the led lights up in red, press the button several times until the 15V mode is selected and the led lights in cyan. See [troubleshooting](https://github.com/simonktum/cocktail-pumps#troubleshooting) if it flashes or behaves otherwise.
+2. When the led lights up in red, press the button several times until the 15V mode is selected and the led lights in cyan. See [troubleshooting](https://github.com/simonktum/cocktail-pumps/?tab=readme-ov-file#troubleshooting) if it flashes or behaves otherwise.
 3. Start the pump esp by connecting it via a micro usb cable
 4. If it was unplugged, remove the 5V and ground connections off the esp handling the weight sensors and then plug the micro usb in to boot it. After around 7 seconds you can plug the 5V and ground connections back in.
 5. Make sure the the aggregator script is running. You can test it by sending an http request to ``/pumps/weights``. Both should now be accessible to the CPEE ready to receive instructions.
@@ -30,22 +33,22 @@ This is a quick introduction of how to get the current setup up and running. If 
 There are some important limitations in the current design:
 
 - The esp for the loadcells occasionally reboots due to a [brownouts](https://arduino.stackexchange.com/questions/76690/esp32-brownout-detector-was-triggered-upon-wifi-begin#76692) flag
-- The wiring and inconsistent behavior of the ESP can be finicky (see [troubleshooting](https://github.com/simonktum/cocktail-pumps#troubleshooting))
+- The wiring and inconsistent behavior of the ESP can be finicky (see [troubleshooting](https://github.com/simonktum/cocktail-pumps/?tab=readme-ov-file#troubleshooting))
 - The loadcells can loosen over time because they are screwed into the 3d printed part
 - While the software implementation was fairly stable for me, it could sense to move to a different architecture without an aggregator or MQTT
 
 
 # Implementation
 
-It the final implementation this project combines in total 6 Loadcells and 5 pumps. 
-
-
-The project also contains the CAD Files for all 3D printed parts which you can find [here](https://github.com/simonktum/cocktail-pumps/tree/main/weightsensors/docs).
+It the final implementation this project combines in total 6 load cells and 5 pumps. The materials for them are [here](/weightsensors/README.md) and [here](/pumps/ReadMe.md). The project also contains the CAD Files for all 3D printed parts which you can find [here](/docs/3D%20Prints/).
 
 
 ## CPEE Intetegration
 
-![CPEE Graph](docs/images/Cocktail_Pumps.svg)
+<p align="center">
+<img src="docs/images/Cocktail_Pumps.svg" alt="CPEE Graph">
+</p>
+
 
 The CPEE implementation can be found [here](/docs/CPEE/Cocktail_Pumps.xml).
 
@@ -124,9 +127,10 @@ The weightsensors can also output their readings to an OLED Display which was im
 You can find all STL files [here](/docs/3D%20Prints/).
 
 
+<p align="center">
+<img src="docs/images/loadcell.png" alt="Case for the load cells" width="500">
+</p>
 
-
-![Case for the load cells](docs/images/loadcell.png)
 
 The case for the load cell is an improved designed based on Dominik's original case. It is reduced to the 3 essential pieces:
 
@@ -134,12 +138,16 @@ The case for the load cell is an improved designed based on Dominik's original c
 2. A bottom cover which includes a slightly larger cable hole.
 3. A bracket to hold the cell in place and connect it to other ones with dovetails
 
-![Dovetail connectors](docs/images/dovetail.png)
+
+<p align="center">
+<img src="docs/images/dovetail.png" alt="Dovetail connectors" width="500">
+</p>
 
 The dovetail connector includes a bracket to hold small cables.
 
-![Case for the ESP and converters](docs/images/case.png)
-Case for the ESP and converters
+<p align="center">
+<img src="docs/images/case.png" alt="Case for the ESP and converters" width="500">
+</p>
 
 The basic case houses the ESP and converters to save them from water splashes.
 
@@ -172,9 +180,9 @@ The power to drive the relays is provided by a ZY12PDN board with the following 
 | Blue   | 20V |
 | Purple | Configure fixed voltage mode with highest available voltage. |
 
-The pumps can be driven with 15V or 20V.
+The pumps can be driven with 15V or 20V, though I would recommend 15V since that is what I tested them with.
 
-The remaining hardware was not implemented by me. Please check the original [Readme](https://github.com/simonktum/cocktail-pumps/pumps/ReadMe.md) by Quirin Sailer for more information.
+The remaining hardware was not implemented by me. Please check the original [Readme](/pumps/ReadMe.md) by Quirin Sailer for more information.
 
 ### Aggregator Endpoints
 
@@ -187,11 +195,15 @@ The remaining hardware was not implemented by me. Please check the original [Rea
 Since the pumps were already developed, only the tube fixture was 3d printed by me and is provided here. You can find all STL files [here](/docs/3D%20Prints/).
 
 
-![Case for the ESP and converters](docs/images/fixture.png)
+<p align="center">
+<img src="docs/images/fixture.png" alt="Case for the ESP and converters" width="400">
+</p>
 
 The current, less than optimal, fixture for the tubes.
 
-![Case for the ESP and converters](docs/images/fixture_alt.png)
+<p align="center">
+<img src="docs/images/fixture_alt.png" alt="Case for the ESP and converters" width="500">
+</p>
 
 This is an alternative plate with the correct dimensions to hold up to 5 tubes with a diameter of 6 mm.
 
