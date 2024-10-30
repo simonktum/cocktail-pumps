@@ -49,7 +49,7 @@ It the final implementation this project combines in total 6 load cells and 5 pu
 
 The CPEE implementation can be found [here](/docs/CPEE/Cocktail_Pumps.xml).
 
-The process starts by requesting the fill level of Sensor 1 which correspond to the fill level of the bottle place on the second weight cell. This is done thought a GET request to ``/weights/sensor_1113/level`` If the resulting fill level is larger than 10% a command is sent to the aggregator to fill the glass from pump 1 by 20 grams. The endpoint is a POST to ``/pumps/fill/0/20`` The aggregator script uses the ``CPEE-CALLBACK`` header to perform the filling filling of the glass asynchronous. The callback is sent once the glass is filled by the requested amount (in grams).
+The process starts by requesting the fill level of the bottle place on the second weight cell. This is done thought a GET request to ``/weights/sensor_1113/level`` If the resulting fill level is larger than 10% a command is sent to the aggregator to fill the glass from pump 1 by 20 grams. The endpoint is a POST to ``/pumps/fill/1/20`` The aggregator script uses the ``CPEE-CALLBACK`` header to perform the filling filling of the glass asynchronous. The callback is sent once the glass is filled by the requested amount (in grams).
 
 ## Architecture
 
