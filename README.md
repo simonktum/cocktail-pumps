@@ -22,20 +22,19 @@ This is a quick introduction of how to get the current setup up and running. If 
 0. Don't place anything on the weightcells yet
 1. Connect the relays to power via a usb-c cable.
 2. When the led lights up in red, press the button several times until the 15V mode is selected and the led lights in cyan. See [troubleshooting](https://github.com/simonktum/cocktail-pumps/?tab=readme-ov-file#troubleshooting) if it flashes or behaves otherwise.
-3. Start the pump esp by connecting it via a micro usb cable
-4. If it was unplugged, remove the 5V and ground connections off the esp handling the weight sensors and then plug the micro usb in to boot it. After around 7 seconds you can plug the 5V and ground connections back in.
-5. Make sure the the aggregator script is running. You can test it by sending an http request to ``/pumps/weights``. Both should now be accessible to the CPEE ready to receive instructions.
-6. Set the empty fill level by placing an empty bottle and sending a post to ``weights/\<sensor-id\>/empty``. Likewise, place a full bottle send a post request to ``weights/\<sensor-id\>/full`` to set the full weight. That allows you to receive the fill level with ``weights/\<sensor-id\>/level``.
+3. Connect the pump esp by connecting it via a micro usb cable
+4. If the esp for the weight cells was unplugged, remove the 5V and ground connections off the board and then plug the micro usb in to boot it. After around 7 seconds you can plug the 5V and ground connections back in.
+5. Make sure the the aggregator script is running. You can test it by sending an http request to ``/pumps/weights``. Both esps should now be accessible to the CPEE via the aggregator  and ready to receive instructions.
+6. Set the empty fill level by placing an empty bottle and sending a post to ``weights/<sensor-id>/empty``. Likewise, place a full bottle send a post request to ``weights/<sensor-id>/full`` to set the full weight. That allows you to receive the fill level with ``weights/<sensor-id>/level``.
 
 
 ## Limitations
 
 There are some important limitations in the current design:
 
-- The esp for the loadcells occasionally reboots due to a [brownouts](https://arduino.stackexchange.com/questions/76690/esp32-brownout-detector-was-triggered-upon-wifi-begin#76692) flag
+- The esp for the loadcells occasionally reboots due to a [brownout](https://arduino.stackexchange.com/questions/76690/esp32-brownout-detector-was-triggered-upon-wifi-begin#76692) flag
 - The wiring and inconsistent behavior of the ESP can be finicky (see [troubleshooting](https://github.com/simonktum/cocktail-pumps/?tab=readme-ov-file#troubleshooting))
 - The loadcells can loosen over time because they are screwed into the 3d printed part
-- While the software implementation was fairly stable for me, it could sense to move to a different architecture without an aggregator or MQTT
 
 
 # Implementation
@@ -52,7 +51,7 @@ It the final implementation this project combines in total 6 load cells and 5 pu
 
 The CPEE implementation can be found [here](/docs/CPEE/Cocktail_Pumps.xml).
 
-The process starts by requesting the fill level of Sensor 1 which correspond to the fill level of the bottle place on the second weight cell. This is donw thought a GET request to ``/weights/sensor_1113/level`` If the resulting fill level is larger than 10% a command is sent to the aggregator to fill the glass from pump 1 by 20 grams. The endpoint is a POST to ``/pumps/fill/0/20`` The aggregator script uses the ``CPEE-CALLBACK`` header to perform the filling filling of the glass asynchronous. The callback is sent once the glass is filled by the requested amount (in grams).
+The process starts by requesting the fill level of Sensor 1 which correspond to the fill level of the bottle place on the second weight cell. This is done thought a GET request to ``/weights/sensor_1113/level`` If the resulting fill level is larger than 10% a command is sent to the aggregator to fill the glass from pump 1 by 20 grams. The endpoint is a POST to ``/pumps/fill/0/20`` The aggregator script uses the ``CPEE-CALLBACK`` header to perform the filling filling of the glass asynchronous. The callback is sent once the glass is filled by the requested amount (in grams).
 
 ## Architecture
 
@@ -76,20 +75,22 @@ The aggregator is a flask application found in ``weightsensors/src/aggregator``.
 The code is running on a [ESP-32 Dev Kit C V4](https://cdn.shopify.com/s/files/1/1509/1638/files/AZ282_A_19-2_DE_B08BTS62L7.pdf?v=1719330230) board and uses a HX711 Analog-To-Digital Converted (ADC) with the [olkal/HX711_ADC](https://github.com/olkal/HX711_ADC) implementation. The sensor measurements are sent via MQTT to an MQTT Broker and then aggregated and made available via a REST API by another MQTT Client (Python Paho/Flask).
 
 
-The software of the weight cell is split up into two main components. The sensor code is in the `weightsensors/src` directory. The aggregator code is in the `weightsensors/aggregator` subdirectory.
+The software of the weight cell is split up into two main components, the deploy code which runs the main program, and the calibrate code which can be used to find the calibration values. The sensor code is in the `weightsensors/src` directory. The aggregator code is in the `weightsensors/aggregator` subdirectory.
 Like Dominik, I compiled the sensor code using PlatformIO which can be installed as a VS Code Extension.
 
 Before the weight cell can be deployed using the `deploy.cpp` file, a couple of things have to be adapted in it.
-If you manually noted down the factor, set `useEEPROM` to `false` and update the `calibrationValue` variable accordingly. If you saved it to EEPROM just set the `useEEPROM` to `true`.
-
-To connect to the WiFi, set the WiFi's `ssid` and `password` to the corresponding variables.
+If you manually noted down the factor, set `useEEPROM` to `false` and update the `calibrationValue` variable accordingly. If you saved it to EEPROM just set the `useEEPROM` to `true`. To connect to the WiFi, set the WiFi's `ssid` and `password` to the corresponding variables.
 Lastly, to allow communication with the MQTT Broker you have to set the port (`port` variable) and IP Address (`server` variable) of the Mosquitto MQTT Broker. Note that if you use the `startupBroker` bash script in the `scripts` subdirectory, the port has to be equal to the `listener` entry in the `mosquitto.conf` file.
 
 For more information, please look at Dominik's original Readme which can be found [here](https://github.com/DominikVoigt/esp32-weightsensor?tab=readme-ov-file).
 
 ### Wiring
 
-![Wiring Diagram](<docs/images/wiring.png>)
+<p align="center">
+<img src="docs/images/wiring.png" alt="Wiring Diagram" width="500">
+</p>
+
+While the color coding of the weight cell wires was consistent with the image, they can differ. To identify the pairs the most reliable way is to measure the resistance of each pair of wires (make sure to measure within the correct range to see the resistance values). Each of the correct pairs of wires should have a resistance of about 1000 Ohm and the other (wrong) pair combinations around 750-850 Ohm.
 
 This is the wiring setup of a single weight cell. All cells follow this schema and are connected to the following pins:
 
@@ -100,18 +101,19 @@ This is the wiring setup of a single weight cell. All cells follow this schema a
 - Cell 4 with DT = 32 and SCK = 33
 - Cell 5 with DT = 12 and SCK = 14
 
+<br>
+<p align="center">
+<img src="docs/images/weight_esp.png" alt="Wiring Diagram" width="500">
+</p>
 
-![Wiring Diagram](<docs/images/weight_esp.png>)
 
-
-While the color coding of the weight cell wires was consistent with the image, they can differ. To identify the pairs the most reliable way is to measure the resistance of each pair of wires (make sure to measure within the correct range to see the resistance values). Each of the correct pairs of wires should have a resistance of about 1000 Ohm and the other (wrong) pair combinations around 750-850 Ohm.
 
 ### Calibration
 
 Each load cell has to be calibrated with a calibration value which has to be found empirically. This can be done by selecting the `calibrate.cpp` in the `platformio.ini` file and then using the "Upload and Monitor" task to run the calibration program. When following the program either note the calibration factor down or save it to EEPROM.
 
 
-### Endpoints
+### Aggregator Endpoints
 
 - weights: Data of all sensors that data was aggregated on
 - weights/\<sensor-id\>: Data of a particular sensor specified by the <sensor-id> can be seen under the name property of the weight endpoint
@@ -120,6 +122,11 @@ Each load cell has to be calibrated with a calibration value which has to be fou
 - weights/\<sensor-id\>/full: Weight of the completely filled container on the scale. Null if weight not set previously via a POST to this endpoint
 - weights/\<sensor-id\>/empty: Weight of the completely empty container on the scale. Null if weight not set previously via a POST to this endpoint
 - weights/\<sensor-id\>/level: Current fill level based on the weight of the container on the scale, requires full and empty to be set via the corresponding endpoints
+- cocktail/weight/: Tares all weight cells to set the new zero point
+
+The ESP listens to the following MQTT instruction:
+
+- `TARE` Tares all weight cells to set the new zero point
 
 The weightsensors can also output their readings to an OLED Display which was implemented by Dominik. However it is not used in this implementation.
 
