@@ -147,13 +147,13 @@ The case for the load cell is an improved designed based on Dominik's original c
 
 
 <p align="center">
-<img src="docs/images/dovetail.png" alt="Dovetail connectors" width="500">
+<img src="docs/images/dovetail.png" alt="Dovetail connectors" width="400">
 </p>
 
 The dovetail connector includes a bracket to hold small cables.
 
 <p align="center">
-<img src="docs/images/case.png" alt="Case for the ESP and converters" width="500">
+<img src="docs/images/case.png" alt="Case for the ESP and converters" width="400">
 </p>
 
 The basic case houses the ESP and converters to save them from water splashes.
@@ -216,7 +216,7 @@ This is an alternative plate with the correct dimensions to hold up to 5 tubes w
 
 # Troubleshooting
 
-In an effort to make this project easily reproducible here are some common issues I ran into:
+To make this project easily reproducible here are some common issues I ran into:
 
 
 ## Weightsensors
@@ -229,7 +229,7 @@ However this might still fail on the loadcell esp, in which case also disconnect
 - The zero point might change unexpectedly if the weightcell esp experiences a brownout and reboots
 
 ## Pumps
-- The power delivery for the pump relays is picky about the rotation of the usb-c cable. It the led does not iluminated, turn it by 180° and try again.
+- The power delivery for the pump relays is picky about the rotation of the usb-c cable. It the led does not illuminate, turn it by 180° and try again.
 - The power delivery requires a 5V input first and then you can cycle through the power profiles by pressing the button
 - If the power delivery led flashes you are either in configuration mode, or your input is unsuitable
 
