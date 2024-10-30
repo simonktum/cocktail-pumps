@@ -28,11 +28,11 @@ This is a quick introduction of how to get the current setup up and running. If 
 
 ## Limitations
 
-There are some important limitations in the current design:
+There are some limitations in the current design:
 
 - The esp for the loadcells occasionally reboots due to a [brownout](https://arduino.stackexchange.com/questions/76690/esp32-brownout-detector-was-triggered-upon-wifi-begin#76692) flag
 - The wiring and inconsistent behavior of the ESP can be finicky (see [troubleshooting](https://github.com/simonktum/cocktail-pumps/?tab=readme-ov-file#troubleshooting))
-- The loadcells can loosen over time because they are screwed into the 3d printed part
+- The loadcells can loosen over time because they are screwed directly into the 3d printed part
 
 
 # Implementation
@@ -162,7 +162,7 @@ The basic case houses the ESP and converters to save them from water splashes.
 
 The pumps are controlled by a separate ESP, which controls up to 8 relays to drive them. The ESP receives the various commands over MQTT from the aggregator on the topic ``cocktail/pumpen``.
 
-Like the the sensor esp code, you first need to set the correct wifi details and MQTT Broker address. All MQTT instructions can reference multiple pumps by including multiple numbers e.g. ``ON023--``. The trailing dash ensures no additional pumps are incorrectly identified.
+Like the the sensor esp code, you first need to set the correct wifi details and MQTT Broker address. All MQTT instructions can reference multiple pumps by including multiple numbers e.g. ``ON023-``. The trailing dash ensures no additional pumps are incorrectly identified.
 
 The ESP listens to the following MQTT instructions:
 
