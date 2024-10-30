@@ -9,7 +9,7 @@
 
 This project was developed in the context of the Cocktailmixer robot built by the Information Systems and Business Process Management chair at TUM. It builds upon earlier work by [Dominik Voigt](https://github.com/DominikVoigt/esp32-weightsensor) and Quirin Sailer.
 
-The stated goal of this project was to implement a coherent system of loadcells and pumps which can be instructed by the [CPEE](https://arxiv.org/pdf/2208.12214) to mix various cocktails. This is achieved by utilizing 1 loadcell for the glass and 5 loadcells for each liquid which can then be pumped into the glass. The CPEE has access to individual weights and commands and can thus coordinated pumping, the fill level of the glass, the fill level of the liquids, etc with other processes of the cocktail robot.
+The stated goal of this project was to implement a coherent system of weight cells and pumps which can be instructed by the [CPEE](https://arxiv.org/pdf/2208.12214) to mix various cocktails. This is achieved by utilizing 1 weight cell for the glass and 5 weight cells for each liquid which can then be pumped into the glass. The CPEE has access to individual weights and commands and can thus coordinate the asynchronous pumping, the fill level of the glass, the fill level of the liquids, etc with other processes of the cocktail robot.
 
 
 
@@ -58,7 +58,7 @@ The process starts by requesting the fill level of Sensor 1 which correspond to 
 
 The esp controlling the weightsensors and the esp controlling the pumps are both sending and receiving instructions over the same MQTT Broker. The subscribed topics are ``cocktail/weight/+`` and ``cocktail/pumpen/``. The CPEE does not send MQTT instructions directly, instead it interfaces with an aggregator. This aggregator listens to updates on the MQTT topics and forwards instructions by the CPEE in the same topic channels. The aggregator provides a REST API to the CPEE which provides information about the current status of the sensors and possible instructions. It also holds the latest weight measured by each weight cell.
 
-The documentation for the endpoints is in the respective section of this readme.
+The documentation for the endpoints is in their respective sections below.
 
 ## Aggregator
 
