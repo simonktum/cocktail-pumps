@@ -224,7 +224,7 @@ In an effort to make this project easily reproducible here are some common issue
 - When flashing the esp fails because ``the wrong boot mode is detected`` you need to put it into download mode by pressing and holding the boot button on the board for 1-2 sec.
 However this might still fail on the loadcell esp, in which case also disconnect 5V power and ground cables during boot and wait until the loadcells were initialized after the reboot.
 - Similarly, if you encounter the error ``A fatal error occurred: Serial data stream stopped: Possible serial noise or corruption.``, disconnect the 5V power and ground connections.
-- mqtt message might look weird in some clients, byte order
+- The mqtt message might look weird in some clients because of the byte order
 - If the zero point of the loadcell is set incorrectly, you need to send a tare command by pressing t in the serial monitor
 - The zero point might change unexpectedly if the weightcell esp experiences a brownout and reboots
 
